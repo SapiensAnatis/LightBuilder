@@ -2,6 +2,7 @@ class("cLightCreator")
 
 function cLightCreator:__init()
   self.activeLights = {}
+  self.creators = {}
   
   Events:Subscribe("ModuleUnload", self, self.Cleanup)
   Network:Subscribe("Syncing", self, self.SyncedCreate)
@@ -21,6 +22,8 @@ function cLightCreator:GUICreate(colour, magnitude, size, pos, name)
     local args = {["color"] = light:GetColor(), ["mult"] = light:GetMultiplier(), ["radius"] = light:GetRadius(), ["pos"] = light:GetPosition(), ["name"] = name, ["playername"] = LocalPlayer:GetName()}
     
     self.activeLights[name] = light
+    
+    self.creators[name] = args.playername
     
     Network:Send("cTableModified", args)
     
@@ -58,6 +61,8 @@ function cLightCreator:SilentCreate(colour, magnitude, size, pos, name, playerna
     self.activeLights[name] = light
     
     local args = {["color"] = light:GetColor(), ["mult"] = light:GetMultiplier(), ["radius"] = light:GetRadius(), ["pos"] = light:GetPosition(), ["name"] = name, ["playername"] = playername}
+    
+    self.creators[name] = playername
     
     Events:Fire("cLightCreated", args)
   end

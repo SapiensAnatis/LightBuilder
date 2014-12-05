@@ -29,6 +29,7 @@ function LightSync:Save()
   
 end
 
+
 function LightSync:PlayerJoin(args)
   for i, v in ipairs(self.names) do
     Network:Send(args.player, "Syncing", self.globalLightTable[v])

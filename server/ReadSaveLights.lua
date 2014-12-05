@@ -57,10 +57,13 @@ function LightManager:LoadObjectsFromFile(fileName)
 
       local newArgs = {["color"] = args.color, ["mult"] = args.mult, ["radius"] = args.radius, ["pos"] = args.pos, ["name"] = args.name, ["playername"] = args.playername}
 			Events:Fire("LightLoaded", newArgs)
+      
 
 
 		end
 	end
+  
+  Console:Print("File loaded sucessfully!", Color.Green)
 	file:close()
 	local LoadTime	=	timer:GetSeconds()
 	local AvgLoadPerSecond = 4
@@ -75,7 +78,7 @@ function LightManager:SaveObjectsToFile(fileName)
   local backup = io.open(fileName .. ".backup", "w")
   
   if oldContent == nil then
-    oldContent = "There was nothing last time"
+    oldContent = ""
   end
   
   backup:write(oldContent)
