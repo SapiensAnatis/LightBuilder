@@ -11,13 +11,16 @@ function cLightBuilder:__init()
   self.window:SetTitle("LightBuilder")
   self.window:Subscribe("WindowClosed", self, self.Closed)
   
+  self.CorrectGameState = true
+  
   self.tc = TabControl.Create(self.window)
   self.tc:SetDock(GwenPosition.Fill)
   self.tc.nl = self.tc:AddPage("New light")
   self.tc.ml = self.tc:AddPage("Existing lights") 
   
   self.colorpicker = HSVColorPicker.Create(self.tc.nl:GetPage())
-  self.colorpicker:SetSizeRel(Vector2(70, 16))
+  self.colorpicker:SetSizeRel(Vector2(70, 18.5))
+  self.colorpicker:SetPositionRel(Vector2(0, 0.5))
   
   self.OptionsLabel = Label.Create(self.tc.nl:GetPage())
   self.OptionsLabel:SetText("Light properties")
@@ -89,14 +92,15 @@ function cLightBuilder:__init()
   self.lightlist:AddColumn("Radius", self.ColumnWidth)
   self.lightlist:AddColumn("Creator", self.ColumnWidth)
   
+  
   self.rows = {}
   
-  self.DeleteBox = CheckBox.Create(self.tc.nl:GetPage())
-  self.DeleteBox:SetPositionRel(Vector2(68, 16.2))
-  self.DeleteLabel = Label.Create(self.tc.nl:GetPage())
-  self.DeleteLabel:SetPositionRel(Vector2(69.65, 16.45))
-  self.DeleteLabel:SetText("Toggle deletion mode")
-  self.DeleteLabel:SizeToContents()
+  self.NumLockKeys = {97, 98, 99, 100, 101, 102, 103, 104, 105, 96, 110}
+  self.NotNumLockKeys = {45, 46, 35, 40, 34, 37, 12, 39, 36, 38, 33}
+  
+  -- It's nil because we must first determine whether numlock is on
+  
+  self.numlock = nil
   
   self.tc2 = TabControl.Create(self.tc.ml:GetPage())
   self.tc2:SetSizeRel(Vector2(84.5, 8))
@@ -104,9 +108,27 @@ function cLightBuilder:__init()
   
   self.RefreshButton = Button.Create(self.tc2)
   self.RefreshButton:SetSizeRel(Vector2(0.2, 0.3))
-  self.RefreshButton:SetPositionRel(Vector2(0.4, 0.1))
+  self.RefreshButton:SetPositionRel(Vector2(0.4, 0.09))
   self.RefreshButton:SetText("Refresh")
   self.RefreshButton:Subscribe("Press", self, self.Refresh)
+  
+  self.DeleteBox = CheckBox.Create(self.tc2)
+  self.DeleteBox:SetPositionRel(Vector2(0.835, 0.15))
+  self.DeleteLabel = Label.Create(self.tc2)
+  self.DeleteLabel:SetPositionRel(Vector2(0.855, 0.18))
+  self.DeleteLabel:SetText("Toggle deletion mode")
+  self.DeleteLabel:SizeToContents()
+  
+  self.NLImage = Image.Create(AssetLocation.Base64, 
+"iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAMESURBVFhHxZc/aBRBGMW/JJc/xggpLA4EUUiRQjCVWFgICrYnWKRQiWChqEGwsQgYUDtJNBGtYrAQhKCCWhgRAlpoLPwDFmoEbSzSHOSSXHJ3uYzv271ZZvfe7m3EPwM/JvtuZr735nZ3LmKM+W3a2+SpiKy3tcob9nkaqJgGtGxrRqroTXOTrKPvYeMaQcU0bO6UW1q8Z7uoG9O9RSbYuEZQsRFo2UyLVIB5dFNW1IBeq87GJ0HFRuA7H9eiA4dx+VlM7oC/C7gnrrDxSVAxCU3Z0ixlTf/lmSyqgReTsqwGYEz7LjYvDiomgeI3tJhNb9m7298FcJ7Ni4OKcaC56YuugQdjUlID+Bry6DNsPoOKcaCNapFoekvvzmAXBth8BhUZaFk876Va+lVmYOKq9ySYTe0yx9ZgUJGBVpf+9X0xfb1+r9flT7KU3RrsQo6tE4WKUdBo+ktn/GLaW23kovdW1Hthlq0VhYpR0Nz0y0kG8rNSwFvR08E+tp4LFV3Qsk0iq5r+67Ss2UJxBpSh076OOY/Zmi5UdEFz0xfcQnEGfr6UxY62YBd2sXUtVLSguemrbhElzoByqj8wMMnWtlDRguamX4gWSTKAm3VFjSPAGsbEHlJUVHQS8BaZm4YUKaAkGVCOHAp2YZTVUKio6CSdHJdeaWTg3UMp6+d4hPWQ6qZ1qJgivdLIAFjavyfYhWFai4oJd75LCgPm+R3/xYRdmEffUVerTqilx6m3npReSWMALOjrWseBs3X16oRw+uCtx0hpwExd98fhifiGPnRUB394FxtIr8zcFbNjm5hX9/jnFhxSBfvjFfSHaoYuwunL0YUYKx+5HmV8KDDwPlTTKb6h9Ap+ERt95T65zT93KX6QonNUH2QG3PSV6AKMtPeA5fJgYGAmZADNS49HpVpL/z06mZH2HrDk30qpqzMw0eca8NIfz3kHjvLDnfgHmR885v87B6Zqtb30FaQ354762/k3uXDCK64mlB4gOaDi/+Ak9kV7uQZGwPA/QmuNGWPkF3FYaWMEGUNTAAAAAElFTkSuQmCC")
+
+  self.NLImage:SetPosition(((self.window:GetPosition()) + Vector2(self.window:GetSize().x/40, self.window:GetSize().y/1.16)))
+  self.NLImage:SetSize(Vector2(20, 20))
+  
+  self.NLLabel = Label.Create(self.tc2)
+  self.NLLabel:SetPositionRel(Vector2(0.039, 0.18))
+  self.NLLabel:SetText("NumLk is on!")
+  self.NLLabel:SetVisible(false)
   
   if self.AllowUseOfMenu then
     Events:Subscribe("KeyDown", self, self.Toggle)
@@ -118,6 +140,8 @@ function cLightBuilder:__init()
   Events:Subscribe("cLightCreated", self, self.ReceiveNewLight)
   Events:Subscribe("Render", self, self.Render)
   Events:Subscribe("KeyDown", self, self.Translate)
+  Events:Subscribe("PostRender", self, self.PostRender)
+  Events:Subscribe("PostTick", self, self.CheckGameState)
   
   
   TranslationAmount = 0.1
@@ -127,6 +151,11 @@ function cLightBuilder:ReceiveNewLight(args)
   if Vector3.Distance(args.pos, LocalPlayer:GetPosition()) < self.ScanRadius then
     self:AddLightToList(args.name, args.color, args.mult, args.radius, args.pos, args.playername)
   end
+end
+
+function cLightBuilder:SetNumlock(bool)
+  self.numlock = bool
+  self.NLLabel:SetVisible(bool)
 end
 
 
@@ -171,13 +200,31 @@ function cLightBuilder:Translate(args)
         TranslationAmount = TranslationAmount / 2
       end
       
-      if args.key == 12 then
+      if args.key == 46 then
         self.lightlist:UnselectAll()
       end
       
       
     end
   end
+  
+  -- numlock detection
+  
+  if table.find(self.NumLockKeys, args.key) ~= nil then
+    self:SetNumlock(true)
+  end
+  
+  if table.find(self.NotNumLockKeys, args.key) ~= nil then
+    self:SetNumlock(false)
+  end
+  
+  
+  if args.key == 144 and self.numlock ~= nil then
+    self:SetNumlock(not self.numlock)
+  end
+  
+  print(args.key)
+  
 end
 
 function cLightBuilder:Refresh()
@@ -206,7 +253,7 @@ function cLightBuilder:Clone(args)
     if self.lightlist:GetSelectedRow() and not self.lightlist:GetMultiSelect() then
       local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
       if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
-        cLightCreator:GUICreate(light:GetColor(), light:GetMultiplier(), light:GetRadius(), light:GetPosition(), self.lightlist:GetSelectedRow():GetCellText(0) .. " (copy)")
+        cLightCreator:GUICreate(light:GetColor(), light:GetMultiplier(), light:GetRadius(), light:GetPosition(), self.lightlist:GetSelectedRow():GetCellText(0) .. " [c]")
       end
     end
   end
@@ -277,15 +324,25 @@ function cLightBuilder:Render()
       end
     end
   end
-  
-  if self.visible then
-    for i, v in ipairs(cLightCreator.activeLights) do
-      Render:FillCircle(Render:WorldToScreen(v:GetPosition()), 20, Color.Red)
-    end
+end
+ 
+function cLightBuilder:PostRender()
+  if self.tc:GetCurrentTab() == self.tc.ml and self.numlock and self.CorrectGameState then
+    self.NLImage:SetPosition(self.window:GetPosition() + Vector2(self.window:GetSize().x/40, self.window:GetSize().y/1.16) )
+    self.NLImage:Draw()
+  end
+end
+
+function cLightBuilder:CheckGameState()
+  if Game:GetState() ~= GUIState.Game then
+    self.window:SetVisible(false)
+    self.CorrectGameState = false
+  else
+    self.window:SetVisible(self.visible and (Game:GetState() == GUIState.Game))
+    self.CorrectGameState = true
   end
 end
     
-  
 
 function cLightBuilder:UpdateLabels(sender)
   if sender == self.PowerSlider then
