@@ -1,4 +1,10 @@
+firstTime = true
+
 Events:Subscribe("ClientModuleLoad", function()
-  print("Hi")
-  LightManager:LoadObjects()
+  
+  if firstTime then
+    LightManager:LoadObjects()
+    firstTime = false
+  end
+  
 end)

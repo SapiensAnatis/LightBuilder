@@ -1,6 +1,16 @@
 class("LightManager")
 
 function LightManager:__init()
+  Events:Subscribe("PostTick", self, self.SaveTimer)
+  self.Timer = Timer()
+end
+
+function LightManager:SaveTimer()
+  if self.Timer:GetMinutes() > 5 then
+    print("Commencing 5-minute save")
+    self:SaveObjectsToMainFile()
+    self.Timer:Restart()
+  end
 end
 
 function LightManager:LoadObjects()

@@ -3,8 +3,7 @@
 class("cLightBuilder")
 
 function cLightBuilder:__init()
-  
-  print("LightBuilder GUI sucessfully loaded!")
+ 
   self.window = Window.Create()
   self.window:SetSizeRel(Vector2(0.455, 0.24))
   self.window:SetPosition(Render.Size/2 - self.window:GetSize()/2)
@@ -174,140 +173,7 @@ function cLightBuilder:__init()
   TranslationAmount = 0.1
 end
 
-function cLightBuilder:ReceiveNewLight(args)
-  if Vector3.Distance(args.pos, LocalPlayer:GetPosition()) < self.ScanRadius then
-    self:AddLightToList(args.name, args.color, args.mult, args.radius, args.pos, args.playername)
-  end
-end
-
-function cLightBuilder:SetNumlock(bool)
-  self.numlock = bool
-  self.NLLabel:SetVisible(bool)
-end
-
-
-
-function cLightBuilder:Translate(args)
-  if self.lightlist:GetSelectedRow() then
-    if not self.lightlist:GetMultiSelect() then
-      light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
-      if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
-        if args.key == string.byte("o") then -- up (+y)
-          pos = light:GetPosition()
-          newPos = pos + Vector3(0, TranslationAmount, 0)
-          Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
-        elseif args.key == string.byte("-") then -- down (-y)
-          pos = light:GetPosition()
-          newPos = pos - Vector3(0, TranslationAmount, 0)
-          Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
-        elseif args.key == string.byte("%") then -- -x
-          pos = light:GetPosition()
-          newPos = pos - Vector3(TranslationAmount, 0, 0)
-          Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
-        elseif args.key == string.byte("'") then -- +x
-          pos = light:GetPosition()
-          newPos = pos + Vector3(TranslationAmount, 0, 0)
-          Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
-        elseif args.key == string.byte("(") then -- -z
-          pos = light:GetPosition()
-          newPos = pos - Vector3(0, 0, TranslationAmount)
-          Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
-        elseif args.key == string.byte("&") then -- +z
-          pos = light:GetPosition()
-          newPos = pos + Vector3(0, 0, TranslationAmount)
-          Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
-        end
-      end
-      
-      if args.key == 107 and TranslationAmount < 32 then
-        TranslationAmount = TranslationAmount * 2
-      end
-      
-      if args.key == 109 and TranslationAmount > 0 then
-        TranslationAmount = TranslationAmount / 2
-      end
-      
-      if args.key == 46 then
-        self.lightlist:UnselectAll()
-      end
-      
-      
-    end
-  end
-  
-  -- numlock detection
-  
-  if table.find(self.NumLockKeys, args.key) ~= nil then
-    self:SetNumlock(true)
-  end
-  
-  if table.find(self.NotNumLockKeys, args.key) ~= nil then
-    self:SetNumlock(false)
-  end
-  
-  
-  if args.key == 144 and self.numlock ~= nil then
-    self:SetNumlock(not self.numlock)
-  end
-  
-end
-
-function cLightBuilder:Refresh()
-  self.lightlist:Clear()
-  self.rows = {}
-  
-  for i, v in pairs(cLightCreator.activeLights) do
-    if Vector3.Distance(v:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
-      self:AddLightToList(i, v:GetColor(), v:GetMultiplier(), v:GetRadius(), v:GetPosition(), cLightCreator.creators[i])
-    end
-  end
-end
-
-function cLightBuilder:CloneClosed()
-  self.CVisible = false
-  if not self.visible then
-    Mouse:SetVisible(false)
-  end
-end
-
-function cLightBuilder:AddLightToList(name, colour, brightness, radius, position, playername)
-  local newRow = self.lightlist:AddItem(name)
-  local colourString = tostring(colour.r .. ", " .. colour.g .. ", " .. colour.b)
-  newRow:SetCellText(1, colourString)
-  newRow:SetCellText(2, tostring(brightness))
-  newRow:SetCellText(3, tostring(radius))
-  newRow:SetCellText(4, playername)
-  table.insert(self.rows, newRow)
-end
-
-function cLightBuilder:Clone(args)
-  if args.button == 3 then
-    if self.lightlist:GetSelectedRow() and not self.lightlist:GetMultiSelect() then
-      local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
-      if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
-        self.CloneWindow:SetVisible(true)
-        self.CVisible = true
-      end
-    end
-  end
-end
-
-function cLightBuilder:RemoveLightFromList(args)
-  if args.button == 2 then
-    if self.DeleteBox:GetChecked() then
-      if self.lightlist:GetSelectedRow() then
-        if not self.lightlist:GetMultiSelect() then
-          local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
-          if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
-            Network:Send("RequestRemoveLight", self.lightlist:GetSelectedRow():GetCellText(0))
-            self.lightlist:RemoveItem(self.lightlist:GetSelectedRow())
-            table.remove(self.rows, self.lightlist:GetSelectedRow())
-          end
-        end
-      end
-    end
-  end
-end
+--======= GUI functions
 
 function cLightBuilder:Toggle(args)
   if args.key == string.byte("L") then
@@ -331,6 +197,168 @@ function cLightBuilder:Closed()
   self.CloneTB:SetText("")
 end
 
+function cLightBuilder:AddLightToList(name, colour, brightness, radius, position, playername)
+  local newRow = self.lightlist:AddItem(name)
+  local colourString = tostring(colour.r .. ", " .. colour.g .. ", " .. colour.b)
+  newRow:SetCellText(1, colourString)
+  newRow:SetCellText(2, tostring(brightness))
+  newRow:SetCellText(3, tostring(radius))
+  newRow:SetCellText(4, playername)
+  table.insert(self.rows, newRow)
+end
+
+function cLightBuilder:RemoveLightFromList(args)
+  if args.button == 2 then
+    if self.DeleteBox:GetChecked() then
+      if self.lightlist:GetSelectedRow() then
+        if not self.lightlist:GetMultiSelect() then
+          local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
+          if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
+            Network:Send("RequestRemoveLight", self.lightlist:GetSelectedRow():GetCellText(0))
+            self.lightlist:RemoveItem(self.lightlist:GetSelectedRow())
+            table.remove(self.rows, self.lightlist:GetSelectedRow())
+          end
+        end
+      end
+    end
+  end
+end
+
+
+
+function cLightBuilder:Refresh()
+  self.lightlist:Clear()
+  self.rows = {}
+  
+  for i, v in pairs(cLightCreator.activeLights) do
+    if Vector3.Distance(v:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
+      self:AddLightToList(i, v:GetColor(), v:GetMultiplier(), v:GetRadius(), v:GetPosition(), cLightCreator.creators[i])
+    end
+  end
+end
+
+function cLightBuilder:CloneClosed()
+  self.CVisible = false
+  if not self.visible then
+    Mouse:SetVisible(false)
+  end
+  
+end
+
+function cLightBuilder:UpdateLabels(sender)
+  if sender == self.PowerSlider then
+    self.PowerSliderLabel:SetText(string.sub(tostring(sender:GetValue()), 1, 4))
+  elseif sender == self.RadialSlider then
+    self.RadialSliderLabel:SetText(string.sub(tostring(sender:GetValue()), 1, 4))
+  end
+end
+
+--======= Handlers
+
+function cLightBuilder:Input()
+  if self.visible or self.CVisible then
+    return false
+  else
+    return true
+  end
+end
+
+function cLightBuilder:ReceiveNewLight(args)
+  if Vector3.Distance(args.pos, LocalPlayer:GetPosition()) < self.ScanRadius then
+    self:AddLightToList(args.name, args.color, args.mult, args.radius, args.pos, args.playername)
+  end
+end
+
+--======= KeyDown
+
+function cLightBuilder:SetNumlock(bool)
+  self.numlock = bool
+  self.NLLabel:SetVisible(bool)
+end
+
+
+
+function cLightBuilder:Translate(args)
+  if self.lightlist:GetSelectedRow() then
+    if not self.lightlist:GetMultiSelect() then
+      if cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)] then
+        light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
+        if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
+          if args.key == string.byte("o") then -- up (+y)
+            pos = light:GetPosition()
+            newPos = pos + Vector3(0, TranslationAmount, 0)
+            Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
+          elseif args.key == string.byte("-") then -- down (-y)
+            pos = light:GetPosition()
+            newPos = pos - Vector3(0, TranslationAmount, 0)
+            Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
+          elseif args.key == string.byte("%") then -- -x
+            pos = light:GetPosition()
+            newPos = pos - Vector3(TranslationAmount, 0, 0)
+            Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
+          elseif args.key == string.byte("'") then -- +x
+            pos = light:GetPosition()
+            newPos = pos + Vector3(TranslationAmount, 0, 0)
+            Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
+          elseif args.key == string.byte("(") then -- -z
+            pos = light:GetPosition()
+            newPos = pos - Vector3(0, 0, TranslationAmount)
+            Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
+          elseif args.key == string.byte("&") then -- +z
+            pos = light:GetPosition()
+            newPos = pos + Vector3(0, 0, TranslationAmount)
+            Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
+          end
+        end
+        
+        if args.key == 107 and TranslationAmount < 32 then
+          TranslationAmount = TranslationAmount * 2
+        end
+        
+        if args.key == 109 and TranslationAmount > 0 then
+          TranslationAmount = TranslationAmount / 2
+        end
+        
+        if args.key == 46 then
+          self.lightlist:UnselectAll()
+        end
+      end
+      
+    end
+  end
+  
+  -- numlock detection
+  
+  if table.find(self.NumLockKeys, args.key) ~= nil then
+    self:SetNumlock(true)
+  end
+  
+  if table.find(self.NotNumLockKeys, args.key) ~= nil then
+    self:SetNumlock(false)
+  end
+  
+  
+  if args.key == 144 and self.numlock ~= nil then
+    self:SetNumlock(not self.numlock)
+  end
+  
+end
+
+--======= Light creation
+
+function cLightBuilder:Clone(args)
+  if args.button == 3 then
+    if self.lightlist:GetSelectedRow() and not self.lightlist:GetMultiSelect() then
+      local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
+      if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
+        self.CloneWindow:SetVisible(true)
+        self.CVisible = true
+        Mouse:SetVisible(true)
+      end
+    end
+  end
+end
+
 function cLightBuilder:Send()
   if string.len(self.NameTB:GetText()) > 1 then
     if not self.NameTB:GetText():match("%W") then
@@ -352,23 +380,22 @@ function cLightBuilder:CSend()
   if self.lightlist:GetSelectedRow() then
     local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)] 
     if string.len(self.CloneTB:GetText()) > 1 then
-      if not self.CloneTB:GetText():match("%W") then
-        if not cLightCreator.activeLights[self.CloneTB:GetText()] then
-          cLightCreator:GUICreate(light:GetColor(), light:GetMultiplier(), light:GetRadius(), light:GetPosition(), self.CloneTB:GetText())
-          self.CloneButton:SetText("Create!")
-          self.CloneWindow:SetVisible(false)
-          self.CVisible = false
-        else
-          self.CloneButton:SetText("Name in use")
-        end
+      if not cLightCreator.activeLights[self.CloneTB:GetText()] then
+        cLightCreator:GUICreate(light:GetColor(), light:GetMultiplier(), light:GetRadius(), light:GetPosition(), self.CloneTB:GetText())
+        self.CloneButton:SetText("Create!")
+        self.CloneWindow:SetVisible(false)
+        self.CVisible = false
       else
-        self.CloneButton:SetText("Invalid characters")
+        self.CloneButton:SetText("Name in use")
       end
     else
       self.CloneButton:SetText("Name too short")
     end
   end
 end
+
+--======== Misc
+
 
 function cLightBuilder:Render()
   if self.lightlist:GetSelectedRow() ~= nil then
@@ -408,21 +435,7 @@ function cLightBuilder:CheckGameState()
 end
     
 
-function cLightBuilder:UpdateLabels(sender)
-  if sender == self.PowerSlider then
-    self.PowerSliderLabel:SetText(string.sub(tostring(sender:GetValue()), 1, 4))
-  elseif sender == self.RadialSlider then
-    self.RadialSliderLabel:SetText(string.sub(tostring(sender:GetValue()), 1, 4))
-  end
-end
 
-function cLightBuilder:Input()
-  if self.visible or self.CVisible then
-    return false
-  else
-    return true
-  end
-end
 
 cLightBuilder = cLightBuilder()
 
