@@ -4,7 +4,7 @@ class("cLightBuilder")
 
 function cLightBuilder:__init()
   
-  print(Render.Size)
+  print("LightBuilder GUI sucessfully loaded!")
   self.window = Window.Create()
   self.window:SetSizeRel(Vector2(0.455, 0.24))
   self.window:SetPosition(Render.Size/2 - self.window:GetSize()/2)
@@ -249,8 +249,6 @@ function cLightBuilder:Translate(args)
   if args.key == 144 and self.numlock ~= nil then
     self:SetNumlock(not self.numlock)
   end
-  
-  print(args.key)
   
 end
 
