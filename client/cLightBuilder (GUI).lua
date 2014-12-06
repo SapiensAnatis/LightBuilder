@@ -3,6 +3,8 @@
 class("cLightBuilder")
 
 function cLightBuilder:__init()
+  
+  print(Render.Size)
   self.window = Window.Create()
   self.window:SetSizeRel(Vector2(0.455, 0.24))
   self.window:SetPosition(Render.Size/2 - self.window:GetSize()/2)
@@ -10,6 +12,7 @@ function cLightBuilder:__init()
   self.window:SetVisible(self.visible)
   self.window:SetTitle("LightBuilder")
   self.window:Subscribe("WindowClosed", self, self.Closed)
+  self.window:SizeToChildren()
   
   self.CorrectGameState = true
   
@@ -84,7 +87,7 @@ function cLightBuilder:__init()
   self.ColumnWidth = self.window:GetSize().x/5.2
   
   self.lightlist = SortedList.Create(self.tc.ml:GetPage())
-  self.lightlist:SetDock(GwenPosition.Top)
+  self.lightlist:SetDock(GwenPosition.Fill)
   self.lightlist:SetSizeRel(Vector2(10, 14.75))
   self.lightlist:AddColumn("Name", self.ColumnWidth)
   self.lightlist:AddColumn("Colour", self.ColumnWidth)
@@ -126,7 +129,7 @@ function cLightBuilder:__init()
   self.NLImage:SetSize(Vector2(20, 20))
   
   self.NLLabel = Label.Create(self.tc2)
-  self.NLLabel:SetPositionRel(Vector2(0.039, 0.18))
+  self.NLLabel:SetPositionRel(Vector2(0.039, 0.21))
   self.NLLabel:SetText("NumLk is on!")
   self.NLLabel:SetVisible(false)
   
@@ -143,6 +146,30 @@ function cLightBuilder:__init()
   Events:Subscribe("PostRender", self, self.PostRender)
   Events:Subscribe("PostTick", self, self.CheckGameState)
   
+  self.CloneWindow = Window.Create()
+  self.CloneWindow:SetSizeRel(Vector2(0.1, 0.1))
+  self.CloneWindow:SetVisible(false)
+  self.CloneWindow:SetPosition(self.window:GetPosition() + self.window:GetPosition()/1.5)
+  self.CloneWindow:SetTitle("Cloning")
+  self.CloneWindow:Subscribe("WindowClosed", self, self.CloneClosed)
+  self.CVisible = false
+  
+  self.CloneLabel = Label.Create(self.CloneWindow)
+  self.CloneLabel:SetText("    Please name the new clone:")
+  self.CloneLabel:SetSizeRel(Vector2(1, 1))
+  self.CloneLabel:SetPositionRel(Vector2(0, 0.02))
+  self.CloneLabel:SizeToContents()
+  self.CloneLabel:SetAlignment(GwenPosition.Center)
+  
+  self.CloneTB = TextBox.Create(self.CloneWindow)
+  self.CloneTB:SetSizeRel(Vector2(0.92, 0.2))
+  self.CloneTB:SetPositionRel(Vector2(0.01, 0.2))
+  
+  self.CloneButton = Button.Create(self.CloneWindow)
+  self.CloneButton:SetSizeRel(Vector2(0.92, 0.2))
+  self.CloneButton:SetPositionRel(Vector2(0.01, 0.45))
+  self.CloneButton:SetText("Clone!")
+  self.CloneButton:Subscribe("Press", self, self.CSend)
   
   TranslationAmount = 0.1
 end
@@ -238,6 +265,10 @@ function cLightBuilder:Refresh()
   end
 end
 
+function cLightBuilder:CloneClosed()
+  self.CVisible = false
+end
+
 function cLightBuilder:AddLightToList(name, colour, brightness, radius, position, playername)
   local newRow = self.lightlist:AddItem(name)
   local colourString = tostring(colour.r .. ", " .. colour.g .. ", " .. colour.b)
@@ -253,7 +284,8 @@ function cLightBuilder:Clone(args)
     if self.lightlist:GetSelectedRow() and not self.lightlist:GetMultiSelect() then
       local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
       if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
-        cLightCreator:GUICreate(light:GetColor(), light:GetMultiplier(), light:GetRadius(), light:GetPosition(), self.lightlist:GetSelectedRow():GetCellText(0) .. " [c]")
+        self.CloneWindow:SetVisible(true)
+        self.CVisible = true
       end
     end
   end
@@ -289,6 +321,9 @@ function cLightBuilder:Closed()
   self.visible = false
   Mouse:SetVisible(self.visible)
   self.NameTB:SetText("")
+  self.CloneWindow:SetVisible(false)
+  self.CVisible = false
+  self.CloneTB:SetText("")
 end
 
 function cLightBuilder:Send()
@@ -305,6 +340,28 @@ function cLightBuilder:Send()
     end
   else
     self.CreateButton:SetText("Name too short")
+  end
+end
+
+function cLightBuilder:CSend()
+  if self.lightlist:GetSelectedRow() then
+    local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)] 
+    if string.len(self.CloneTB:GetText()) > 1 then
+      if not self.CloneTB:GetText():match("%W") then
+        if not cLightCreator.activeLights[self.CloneTB:GetText()] then
+          cLightCreator:GUICreate(light:GetColor(), light:GetMultiplier(), light:GetRadius(), light:GetPosition(), self.CloneTB:GetText())
+          self.CloneButton:SetText("Create!")
+          self.CloneWindow:SetVisible(false)
+          self.CVisible = false
+        else
+          self.CloneButton:SetText("Name in use")
+        end
+      else
+        self.CloneButton:SetText("Invalid characters")
+      end
+    else
+      self.CloneButton:SetText("Name too short")
+    end
   end
 end
 
@@ -336,9 +393,11 @@ end
 function cLightBuilder:CheckGameState()
   if Game:GetState() ~= GUIState.Game then
     self.window:SetVisible(false)
+    self.CloneWindow:SetVisible(false)
     self.CorrectGameState = false
   else
     self.window:SetVisible(self.visible and (Game:GetState() == GUIState.Game))
+    self.CloneWindow:SetVisible(self.CVisible and (Game:GetState() == GUIState.Game))
     self.CorrectGameState = true
   end
 end
