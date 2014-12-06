@@ -86,8 +86,8 @@ function cLightBuilder:__init()
   self.ColumnWidth = self.window:GetSize().x/5.2
   
   self.lightlist = SortedList.Create(self.tc.ml:GetPage())
-  self.lightlist:SetDock(GwenPosition.Fill)
-  self.lightlist:SetSizeRel(Vector2(10, 14.75))
+  self.lightlist:SetDock(GwenPosition.Top)
+  self.lightlist:SetSizeRel(Vector2(10, 15))
   self.lightlist:AddColumn("Name", self.ColumnWidth)
   self.lightlist:AddColumn("Colour", self.ColumnWidth)
   self.lightlist:AddColumn("Brightness", self.ColumnWidth)
@@ -361,7 +361,7 @@ end
 
 function cLightBuilder:Send()
   if string.len(self.NameTB:GetText()) > 1 then
-    if not self.NameTB:GetText():match("%W") then
+    if true then
       if not cLightCreator.activeLights[self.NameTB:GetText()] then
         cLightCreator:GUICreate(self.colorpicker:GetColor(), self.PowerSlider:GetValue(), self.RadialSlider:GetValue(), LocalPlayer:GetPosition(), self.NameTB:GetText())
         self.CreateButton:SetText("Create!")
@@ -385,6 +385,9 @@ function cLightBuilder:CSend()
         self.CloneButton:SetText("Create!")
         self.CloneWindow:SetVisible(false)
         self.CVisible = false
+        if not self.visible then
+          Mouse:SetVisible(false)
+        end
       else
         self.CloneButton:SetText("Name in use")
       end
