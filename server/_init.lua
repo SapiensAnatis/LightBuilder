@@ -1,4 +1,4 @@
-Events:Subscribe("ReadyToLoad", function()
-  print("Starting file loading...")
+Events:Subscribe("ClientModuleLoad", function()
+  print("Hi")
   LightManager:LoadObjects()
 end)

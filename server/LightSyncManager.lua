@@ -19,7 +19,6 @@ function LightSync:Update(args)
     self.globalLightTable[args.name] = args
     table.insert(self.names, args.name)
     Network:Broadcast("Syncing", args)
-
   else
   end
 end
