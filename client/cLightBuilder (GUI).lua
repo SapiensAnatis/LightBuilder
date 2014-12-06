@@ -265,6 +265,9 @@ end
 
 function cLightBuilder:CloneClosed()
   self.CVisible = false
+  if not self.visible then
+    Mouse:SetVisible(false)
+  end
 end
 
 function cLightBuilder:AddLightToList(name, colour, brightness, radius, position, playername)
@@ -310,7 +313,11 @@ function cLightBuilder:Toggle(args)
   if args.key == string.byte("L") then
     self.visible = not self.visible
     self.window:SetVisible(self.visible)
-    Mouse:SetVisible(self.visible)
+    if self.visible or self.CVisible then
+      Mouse:SetVisible(true)
+    elseif not self.visible and not self.CVisible then
+      Mouse:SetVisible(false)
+    end
     self.NameTB:SetText("")
   end
 end
@@ -410,7 +417,11 @@ function cLightBuilder:UpdateLabels(sender)
 end
 
 function cLightBuilder:Input()
-  return not self.visible
+  if self.visible or self.CVisible then
+    return false
+  else
+    return true
+  end
 end
 
 cLightBuilder = cLightBuilder()

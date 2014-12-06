@@ -1,10 +1,13 @@
 class("LightManager")
 
 function LightManager:__init()
+  Events:Fire("ReadyToLoad")
 end
 
 function LightManager:LoadObjects()
+  print("Received command to load")
 	self:LoadObjectsFromFile("SaveFile.txt")
+  print("loaded")
 	return true
 end
 		
@@ -56,7 +59,9 @@ function LightManager:LoadObjectsFromFile(fileName)
       args.name = tostring(name_str)
 
       local newArgs = {["color"] = args.color, ["mult"] = args.mult, ["radius"] = args.radius, ["pos"] = args.pos, ["name"] = args.name, ["playername"] = args.playername}
+
 			Events:Fire("LightLoaded", newArgs)
+      print("Light loaded")
       
 
 
