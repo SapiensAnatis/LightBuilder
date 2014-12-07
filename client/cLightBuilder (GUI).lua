@@ -120,6 +120,7 @@ function cLightBuilder:__init()
   self.DeleteLabel:SetPositionRel(Vector2(0.855, 0.18))
   self.DeleteLabel:SetText("Toggle deletion mode")
   self.DeleteLabel:SizeToContents()
+
   
   self.NLImage = Image.Create(AssetLocation.Base64, 
 "iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAAYdEVYdFNvZnR3YXJlAHBhaW50Lm5ldCA0LjAuM4zml1AAAAMESURBVFhHxZc/aBRBGMW/JJc/xggpLA4EUUiRQjCVWFgICrYnWKRQiWChqEGwsQgYUDtJNBGtYrAQhKCCWhgRAlpoLPwDFmoEbSzSHOSSXHJ3uYzv271ZZvfe7m3EPwM/JvtuZr735nZ3LmKM+W3a2+SpiKy3tcob9nkaqJgGtGxrRqroTXOTrKPvYeMaQcU0bO6UW1q8Z7uoG9O9RSbYuEZQsRFo2UyLVIB5dFNW1IBeq87GJ0HFRuA7H9eiA4dx+VlM7oC/C7gnrrDxSVAxCU3Z0ixlTf/lmSyqgReTsqwGYEz7LjYvDiomgeI3tJhNb9m7298FcJ7Ni4OKcaC56YuugQdjUlID+Bry6DNsPoOKcaCNapFoekvvzmAXBth8BhUZaFk876Va+lVmYOKq9ySYTe0yx9ZgUJGBVpf+9X0xfb1+r9flT7KU3RrsQo6tE4WKUdBo+ktn/GLaW23kovdW1Hthlq0VhYpR0Nz0y0kG8rNSwFvR08E+tp4LFV3Qsk0iq5r+67Ss2UJxBpSh076OOY/Zmi5UdEFz0xfcQnEGfr6UxY62YBd2sXUtVLSguemrbhElzoByqj8wMMnWtlDRguamX4gWSTKAm3VFjSPAGsbEHlJUVHQS8BaZm4YUKaAkGVCOHAp2YZTVUKio6CSdHJdeaWTg3UMp6+d4hPWQ6qZ1qJgivdLIAFjavyfYhWFai4oJd75LCgPm+R3/xYRdmEffUVerTqilx6m3npReSWMALOjrWseBs3X16oRw+uCtx0hpwExd98fhifiGPnRUB394FxtIr8zcFbNjm5hX9/jnFhxSBfvjFfSHaoYuwunL0YUYKx+5HmV8KDDwPlTTKb6h9Ap+ERt95T65zT93KX6QonNUH2QG3PSV6AKMtPeA5fJgYGAmZADNS49HpVpL/z06mZH2HrDk30qpqzMw0eca8NIfz3kHjvLDnfgHmR885v87B6Zqtb30FaQ354762/k3uXDCK64mlB4gOaDi/+Ak9kV7uQZGwPA/QmuNGWPkF3FYaWMEGUNTAAAAAElFTkSuQmCC")
@@ -144,6 +145,7 @@ function cLightBuilder:__init()
   Events:Subscribe("KeyDown", self, self.Translate)
   Events:Subscribe("PostRender", self, self.PostRender)
   Events:Subscribe("PostTick", self, self.CheckGameState)
+  Events:Subscribe("KeyDown", self, self.AltClone)
   
   self.CloneWindow = Window.Create()
   self.CloneWindow:SetSizeRel(Vector2(0.1, 0.1))
@@ -359,6 +361,19 @@ function cLightBuilder:Clone(args)
   end
 end
 
+function cLightBuilder:AltClone(args)
+  if args.key == 45 then
+    if self.lightlist:GetSelectedRow() and not self.lightlist:GetMultiSelect() then
+      local light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
+      if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
+        self.CloneWindow:SetVisible(true)
+        self.CVisible = true
+        Mouse:SetVisible(true)
+      end
+    end
+  end
+end
+
 function cLightBuilder:Send()
   if string.len(self.NameTB:GetText()) > 1 then
     if true then
@@ -419,7 +434,7 @@ function cLightBuilder:Render()
 end
  
 function cLightBuilder:PostRender()
-  if self.tc:GetCurrentTab() == self.tc.ml and self.numlock and self.CorrectGameState then
+  if self.tc:GetCurrentTab() == self.tc.ml and self.numlock and self.CorrectGameState and self.visible then
     self.NLImage:SetPosition(self.window:GetPosition() + Vector2(self.window:GetSize().x/40, self.window:GetSize().y/1.16) )
     self.NLImage:Draw()
   end
