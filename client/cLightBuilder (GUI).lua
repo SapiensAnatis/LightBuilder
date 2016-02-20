@@ -5,7 +5,7 @@ class("cLightBuilder")
 function cLightBuilder:__init()
  
   self.window = Window.Create()
-  self.window:SetSizeRel(Vector2(0.455, 0.24))
+  self.window:SetSizeRel(Vector2(0.455, 0.25))
   self.window:SetPosition(Render.Size/2 - self.window:GetSize()/2)
   self.visible = false
   self.window:SetVisible(self.visible)
@@ -178,6 +178,7 @@ end
 --======= GUI functions
 
 function cLightBuilder:Toggle(args)
+  print(args.key)
   if args.key == string.byte("L") then
     self.visible = not self.visible
     self.window:SetVisible(self.visible)
@@ -286,11 +287,11 @@ function cLightBuilder:Translate(args)
       if cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)] then
         light = cLightCreator.activeLights[self.lightlist:GetSelectedRow():GetCellText(0)]
         if Vector3.Distance(light:GetPosition(), LocalPlayer:GetPosition()) < self.ScanRadius then
-          if args.key == string.byte("o") then -- up (+y)
+          if args.key == 33 then -- up (+y)
             pos = light:GetPosition()
             newPos = pos + Vector3(0, TranslationAmount, 0)
             Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})
-          elseif args.key == string.byte("-") then -- down (-y)
+          elseif args.key == 34 then -- down (-y)
             pos = light:GetPosition()
             newPos = pos - Vector3(0, TranslationAmount, 0)
             Network:Send("RequestMoveLight", {["name"] = self.lightlist:GetSelectedRow():GetCellText(0), ["newpos"] = newPos})

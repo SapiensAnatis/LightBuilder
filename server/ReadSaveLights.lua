@@ -33,7 +33,9 @@ function LightManager:LoadObjectsFromFile(fileName)
 	print("Loading " .. fileName .. "...")
 	local file = io.open(fileName, "r" )
 	if file == nil then
-		print("'" .. fileName .. "' Doesn't exist!")
+		local file = io.open(fileName, "w" )
+		print("'" .. fileName .. "' doesn't exist! Created.")
+		file:close()
 		return false
 	end
 	local count = 0
