@@ -19,7 +19,9 @@ When the script writes to this file, it will save the contents from the last ver
 
 Press L to open the GUI itself. From there you may create lights and view existing ones, in the two tabs of the window.
 
-Creating a light is fairly simple - but moving them requires some more control. To move a light, first select it in the list on the Existing Lights tab. To move on two axes, use the arrow keys. This will allow you to achieve +/- on a flat plane. To move up and down use PgUp and PgDown. *All light movements are relative to the game world, not the player.*
+
+
+Creating a light is fairly simple - but moving them requires some more control. To move a light, first select it in the list on the Existing Lights tab. To move on two axes, use the arrow keys (either the ones at the bottom right of your keyboard, or the ones on the numpad - provided that numlock is off). This will allow you to achieve +/- on a flat plane. To move up and down use PgUp and PgDown. *All light movements are relative to the game world, not the player.*
 
 
 To clone, use the Insert key (this can be either the Ins key in the bundle of six keys to the left of the Enter & Backspace keys, or just numpad 0 with numlock off). You will then be asked what to name the new clone.
