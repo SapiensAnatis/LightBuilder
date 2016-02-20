@@ -12,7 +12,7 @@ Lights are fully synced and are listed in the GUI with radius, name, and the Ste
 
 The selected light is denoted with an axes, origin of the light's given Vector3 position, where red is the X direction and green is the Y direction, leaving blue as the Z direction.
 
-Lights are fully persistent between server restarts by the way of loading in a text file in the base script folder, called SaveFile.txt. If this file is not present it will be created at first launch. 
+Lights are fully persistent between server restarts by the way of loading in a text file in the base script folder, called SaveFile.txt. If this file is not present it will be created at first launch. This file is also saved to every five minutes as the script is running.
 When the script writes to this file, it will save the contents from the last version of the file to another file called SaveFile.txt.backup. This is not a comprehensive backup system and is not designed to contain any content older than one restart.
 
 ### Usage
